@@ -1,7 +1,6 @@
 # Software Design Document
 
-**Arturo Menchaca**  
-**September 18, 2026**  
+**Arturo Menchaca**   
 **CSCI 202 Data Structures**  
 
 ---
