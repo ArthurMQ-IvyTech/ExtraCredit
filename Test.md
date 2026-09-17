@@ -3,9 +3,6 @@
 **Arturo Menchaca**  
 **September 18, 2026**  
 **CSCI 202 Data Structures**  
-**Professor Venable**
-
-![USS Voyager](sdd-assets/voyager.png)
 
 ---
 
@@ -93,7 +90,31 @@ The behavioral design uses a UML Activity Diagram to illustrate the flow of a co
 
 ### 3.1 UML Activity Diagram
 
-![UML Activity Diagram for combat](UML%20Diagrams/Activity.png)
+```mermaid
+flowchart TD
+    start((Start Combat))
+    setup["Setup Turns<br/>Initialize Borg stack and player queue"]
+    playerTurn["Player Turn<br/>Get next character from queue"]
+    attack["Choose attack type<br/>stun or maximum setting"]
+    damageBorg["Do damage to Borg<br/>top of stack"]
+    borgDead{Borg Defeated?}
+    pop[Pop Borg]
+    allDead{All enemies defeated?}
+    enemyTurn["Enemy Turn<br/>top of stack"]
+    damagePlayer["Do damage to player<br/>end of queue"]
+    playerDead{Player defeated?}
+    gameOver((Game Over))
+    endCombat((End Combat))
+
+    start --> setup --> playerTurn --> attack --> damageBorg --> borgDead
+    borgDead -->|Yes| pop --> allDead
+    borgDead -->|No| enemyTurn
+    allDead -->|Yes| endCombat
+    allDead -->|No| enemyTurn
+    enemyTurn --> damagePlayer --> playerDead
+    playerDead -->|Yes| gameOver
+    playerDead -->|No| playerTurn
+```
 
 When the player encounters the Borg, the combat feature is triggered, and the game prepares the Voyager crew and Borg enemies for battle.
 
@@ -111,7 +132,233 @@ The class design describes classes and data structures used to organize the game
 
 ### 4.1 UML Class Diagram
 
-![UML Class Diagram](UML%20Diagrams/Class.png)
+Rendered from `UML Diagrams/UML_Class_Diagram.puml`.
+
+```mermaid
+classDiagram
+    direction TB
+
+    namespace Gameplay_Classes {
+        class Game {
+            -levels : LinkedList~Level~
+            -player : Player
+            -currentLevel : int
+            -hasEmergencyPowerCell : bool
+            -hasBorgNanoprobes : bool
+            -hasModifiedPhaser : bool
+            -combatCompleted : bool
+            -gameOver : bool
+            +Game()
+            +startGame() void
+            -setupLevels() void
+            -playLevel() void
+            -exploreLocation() void
+            -userSecondaryAbility() void
+            -checkLevelProgress() void
+            -startLevelCombat() void
+        }
+
+        class Player {
+            -janeway : Character
+            -seven : Character
+            -doctor : Character
+            -doctorFound : bool
+            +Player()
+            +getJaneway() Character
+            +getSeven() Character
+            +getDoctor() Character
+            +foundDoctor() bool
+            +addDoctor() void
+        }
+
+        class Character {
+            -name : string
+            -role : string
+            -health : int
+            -attackPower : int
+            +Character()
+            +Character(name, role, health, attackPower)
+            +getName() string
+            +getRole() string
+            +getHealth() int
+            +getAttackPower() int
+            +setName(name) void
+            +setRole(role) void
+            +setHealth(health) void
+            +setAttackPower(attackPower) void
+            +isDefeated() bool
+            +takeDamage(damage) void
+        }
+
+        class Borg {
+            -type : string
+            -health : int
+            -attackPower : int
+            +Borg()
+            +Borg(type, health, attackPower)
+            +getType() string
+            +getHealth() int
+            +getAttackPower() int
+            +setType(type) void
+            +setHealth(health) void
+            +setAttackPower(attackPower) void
+            +isDefeated() bool
+            +takeDamage(damage) void
+        }
+
+        class Combat {
+            -player : Player
+            -enemyStack : LinkedStack~Borg~
+            -turnQueue : LinkedQueue~Character~
+            +Combat(player)
+            +addEnemy(enemy) void
+            +setupTurns() void
+            +startCombat() void
+            +isCombatOver() bool
+            +isPlayerDefeated() bool
+            +areEnemiesDefeated() bool
+            -playerTurn() void
+            -enemyTurn() void
+        }
+
+        class Level {
+            -levelNum : int
+            -levelName : string
+            -levelComplete : bool
+            -locations : Location array
+            +Level()
+            +Level(levelNum, levelName)
+            +getLevelNum() int
+            +getLevelName() string
+            +isComplete() bool
+            +setLevelNum(levelNum) void
+            +setLevelName(levelName) void
+            +setComplete(levelComplete) void
+            +getLocation(index) Location
+            +setLocation(index, location) void
+            +allLocationsExplored() bool
+        }
+
+        class Location {
+            -name : string
+            -description : string
+            -explored : bool
+            +Location()
+            +Location(name, description)
+            +getName() string
+            +getDescription() string
+            +isExplored() bool
+            +setName(name) void
+            +setDescription(description) void
+            +setExplored(explored) void
+        }
+
+        class Item {
+            -name : string
+            -description : string
+            +Item()
+            +Item(name, description)
+            +getName() string
+            +getDescription() string
+            +setName(name) void
+            +setDescription(description) void
+        }
+    }
+
+    namespace Data_Structures {
+        class StackADT~T~ {
+            <<abstract>>
+            +DEFAULT_STACK_SIZE : int$
+            +initializeStack()* void
+            +isFullStack()* bool
+            +isEmptyStack()* bool
+            +push(item)* void
+            +peek()* T
+            +top()* T
+            +pop()* T
+        }
+
+        class QueueADT~T~ {
+            <<abstract>>
+            +DEFAULT_QUEUE_SIZE : int$
+            +isEmptyQueue()* bool
+            +isFullQueue()* bool
+            +initializeQueue()* void
+            +front()* T
+            +back()* T
+            +enqueue(queueElement)* void
+            +dequeue()* T
+        }
+
+        class LinkedList~T~ {
+            #head : Node~T~
+            #tail : Node~T~
+            #count : int
+            +LinkedList()
+            +destroyList() void
+            +isEmptyList() bool
+            +length() int
+            +front() T
+            +back() T
+            +get(index) T
+            +insert(newData) void
+            +search(itemToSearch) bool
+        }
+
+        class LinkedStack~T~ {
+            -stackTop : Node~T~
+            -count : int
+            +LinkedStack()
+            +initializeStack() void
+            +isFullStack() bool
+            +isEmptyStack() bool
+            +push(newItem) void
+            +peek() T
+            +top() T
+            +pop() T
+        }
+
+        class LinkedQueue~T~ {
+            #queueFront : Node~T~
+            #queueRear : Node~T~
+            +LinkedQueue()
+            +isEmptyQueue() bool
+            +isFullQueue() bool
+            +initializeQueue() void
+            +front() T
+            +back() T
+            +enqueue(queueElement) void
+            +dequeue() T
+        }
+
+        class Node~T~ {
+            +data : T
+            +link : Node~T~
+            +Node(data, link)
+        }
+    }
+
+    Game "1" *-- "1" Player : player
+    Game "1" *-- "1" LinkedList~T~ : levels
+    LinkedList~T~ "1" *-- "*" Level : stores
+    Level "1" *-- "4" Location : locations
+    Player "1" *-- "3" Character : janeway, seven, doctor
+    Game ..> Combat : creates
+    Game ..> Borg : creates
+    Combat "1" --> "1" Player : player
+    Combat "1" *-- "1" LinkedStack~T~ : enemyStack
+    Combat "1" *-- "1" LinkedQueue~T~ : turnQueue
+    Combat ..> Borg : addEnemy()
+    Combat ..> Character : turn order
+    LinkedStack~T~ --|> StackADT~T~
+    LinkedQueue~T~ --|> QueueADT~T~
+    LinkedList~T~ "1" *-- "0..*" Node~T~ : head, tail
+    LinkedStack~T~ "1" *-- "0..*" Node~T~ : stackTop
+    LinkedQueue~T~ "1" *-- "0..*" Node~T~ : queueFront, queueRear
+    Node~T~ "1" --> "0..1" Node~T~ : link
+
+    note for Item "Item is defined in Item.h and included by Game, but Game currently tracks collected items with boolean flags instead of Item objects."
+```
 
 The UML Class Diagram illustrates the relationship between the classes and data structures. They are connected according to what they perform within the game.
 
